@@ -11,7 +11,7 @@ setup(
     ],
     author = 'Paul Gessinger',
     author_email = 'hello@paulgessinger.com',
-    # scripts=['todo.py']
+    url = 'https://github.com/paulgessinger/codetodo',
     py_modules=['todo'],
     entry_points= {
         'console_scripts': [

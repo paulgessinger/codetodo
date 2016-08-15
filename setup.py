@@ -2,7 +2,7 @@ from setuptools import setup
 
 # @TODO: Fix it! DONE
 setup(
-    name="todopy",
+    name="codetodo",
     version="1.0",
     install_requires=[
         "tabulate",
@@ -15,7 +15,7 @@ setup(
     py_modules=['todo'],
     entry_points= {
         'console_scripts': [
-            'todopy = todo:main' 
+            'codetodo = todo:main' 
         ]
     }
 )

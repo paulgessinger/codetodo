@@ -52,7 +52,6 @@ else:
     yellow = identity
     bold = identity
 
-
 def find_in_file(filename):
     with open(filename, "r") as f:
         lines = f.read().strip().split("\n")
@@ -60,7 +59,7 @@ def find_in_file(filename):
     matched = []
     for i, l in enumerate(lines):
         if any(k in l for k in keywords):
-            matched.append( ( filename, i, l ) )
+            matched.append( ( filename, i+1, l ) )
     return matched
     # return filter(lambda l: any(k in l for k in keywords), lines)
 

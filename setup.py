@@ -12,10 +12,10 @@ setup(
     author = 'Paul Gessinger',
     author_email = 'hello@paulgessinger.com',
     url = 'https://github.com/paulgessinger/codetodo',
-    py_modules=['todo'],
+    py_modules=['codetodo'],
     entry_points= {
         'console_scripts': [
-            'codetodo = todo:main' 
+            'codetodo = codetodo:main' 
         ]
     }
 )

@@ -40,11 +40,17 @@ def glob_pattern(p):
 
     # return files
 
-
-red = lambda s: colored(s, "red", attrs=["bold"])
-green = lambda s: colored(s, "green")
-yellow = lambda s: colored(s, "yellow", attrs=["bold"])
-bold = lambda s: colored(s, attrs=["bold"])
+if sys.stdout.isatty():
+    red = lambda s: colored(s, "red", attrs=["bold"])
+    green = lambda s: colored(s, "green")
+    yellow = lambda s: colored(s, "yellow", attrs=["bold"])
+    bold = lambda s: colored(s, attrs=["bold"])
+else:
+    identity = lambda s:s
+    red = identity
+    green = identity
+    yellow = identity
+    bold = identity
 
 
 def find_in_file(filename):

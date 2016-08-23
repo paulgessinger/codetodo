@@ -135,7 +135,7 @@ def main():
 
         filename = os.path.relpath(filename, os.getcwd())
 
-        comment_type = re.search('@(.*):', comment_line)
+        comment_type = re.search('@(.*?):', comment_line)
         if not comment_type:
             continue
         

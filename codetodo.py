@@ -8,7 +8,7 @@ import re
 from tabulate import tabulate
 from termcolor import colored
 import argparse
-from glob import glob
+import time
 from rglob import rglob
 from fnmatch import fnmatch
 import multiprocessing as mp
@@ -32,6 +32,8 @@ blacklist = [
     "*cache"
 ]
 
+PROC_COUNT = mp.cpu_count()
+
 def glob_pattern(p):
     return rglob(os.getcwd(), p)
 
@@ -52,7 +54,12 @@ else:
     yellow = identity
     bold = identity
 
+def mimefilter(r):
+    mime = mimetypes.guess_type(r)
+    return mime[0] and "text" in mime[0]
+
 def find_in_file(filename):
+    # print("find_in_file", filename)
     with open(filename, "r") as f:
         lines = f.read().strip().split("\n")
 
@@ -64,17 +71,6 @@ def find_in_file(filename):
     # return filter(lambda l: any(k in l for k in keywords), lines)
 
 def get_grep(args, pool):
-    # cmd = "grep -rnw {} -e '@FIXME' -e '@TODO'".format(os.getcwd())
-    # p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
-    # out, err = p.communicate()
-
-    # with open("cache") as f:
-        # out = f.read()
-
-    # lines = out.split("\n")[:-1]
-    # lines = filter(lambda l: "Binary file" not in l, lines)
-
-
     files = []
  
     if len(args.allow) > 0:
@@ -91,9 +87,23 @@ def get_grep(args, pool):
 
 
     files = filter(lambda f: not any(fnmatch(f, b) for b in blacklist), files)
-    
-    line_results = pool.map(find_in_file, files)
+    files = filter(mimefilter, files)
 
+    
+    # print(len(files))
+    async_result = pool.map_async(find_in_file, files)
+    
+    total_chunks = async_result._number_left
+
+    while not async_result.ready():
+        if sys.stdout.isatty():
+            sys.stdout.write("\r{}/{}".format(len(files) - async_result._number_left*len(files)/total_chunks, len(files)))
+            sys.stdout.flush()
+        time.sleep(0.1)
+    
+    if sys.stdout.isatty():
+        sys.stdout.write("\r")
+    line_results = async_result.get()
     lines = []    
 
     for r in line_results:
@@ -103,12 +113,13 @@ def get_grep(args, pool):
     
     return lines
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--allow", "-a", action="append", default=[])
     args = parser.parse_args()
 
-    pool = mp.Pool(processes=mp.cpu_count()) 
+    pool = mp.Pool(processes=PROC_COUNT) 
 
     lines = get_grep(args, pool)
     rows = []
@@ -143,11 +154,8 @@ def main():
         "FIXME": 50
     }
 
-    def mimefilter(r):
-        mime = mimetypes.guess_type(r[2])
-        return mime[0] and "text" in mime[0]
 
-    rows = filter(mimefilter, rows)
+    # rows = filter(mimefilter, rows)
 
     try:
         if len(args.allow) > 0:

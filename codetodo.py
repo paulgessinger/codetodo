@@ -116,7 +116,12 @@ def get_grep(args, pool):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--allow", "-a", action="append", default=[])
+    parser.add_argument(
+        "--allow", "-a", 
+        action="append", 
+        default=[],
+        help="Specify patterns by which to glob for files. Separated by ;. Use quotation marks"
+    )
     args = parser.parse_args()
 
     pool = mp.Pool(processes=PROC_COUNT) 

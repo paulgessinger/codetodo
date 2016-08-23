@@ -122,6 +122,11 @@ def main():
         default=[],
         help="Specify patterns by which to glob for files. Separated by ;. Use quotation marks"
     )
+    parser.add_argument(
+        "--plain", 
+        action="store_true",
+        help="Print in plain format."
+    )
     args = parser.parse_args()
 
     pool = mp.Pool(processes=PROC_COUNT) 
@@ -165,15 +170,28 @@ def main():
     try:
         if len(args.allow) > 0:
             rows = filter(lambda r: any([fnmatch(r[2], p) for p in args.allow]), rows)
-        
         rows = reversed(sorted(rows, key=lambda r: (0 if r[5] else 1, r[2], type_prios[r[0]], r[1] ) ))
-    except:
-        print("error")
+    except Exception as e:
+        # print(e)
+        raise
     # print(tabulate(rows, headers=["type", "prio", "file", "comment"]))
 
+    if not args.plain:
+        print_fancy(rows)
+    else:
+        print_plain(rows)
+
+def print_plain(rows):
+    for row in rows:
+        ttype, prio, filename, line, comment, done = row
+
+        if done:
+            continue
+
+        print(ttype, comment, ": {}:{}".format(filename, line))
 
 
-
+def print_fancy(rows):
     for row in rows:
         ttype, prio, filename, line, comment, done = row
         if ttype == "TODO":

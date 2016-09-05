@@ -3,7 +3,7 @@ from setuptools import setup
 # @TODO: Fix it! DONE
 setup(
     name="codetodo",
-    version="1.0",
+    version="1.1",
     install_requires=[
         "tabulate",
         "termcolor",

@@ -122,11 +122,21 @@ def main():
         default=[],
         help="Specify patterns by which to glob for files. Separated by ;. Use quotation marks"
     )
-    parser.add_argument(
+
+    style = parser.add_mutually_exclusive_group()
+
+    style.add_argument(
         "--plain", 
         action="store_true",
         help="Print in plain format."
     )
+
+    style.add_argument(
+        "--md",
+        action="store_true",
+        help="Print in markdown task list format"
+    )
+
     args = parser.parse_args()
 
     pool = mp.Pool(processes=PROC_COUNT) 
@@ -176,10 +186,22 @@ def main():
         raise
     # print(tabulate(rows, headers=["type", "prio", "file", "comment"]))
 
-    if not args.plain:
-        print_fancy(rows)
-    else:
+    
+    if args.plain:
         print_plain(rows)
+    elif args.md:
+        print_md(rows)
+    else:
+        print_fancy(rows)
+
+def print_md(rows):
+    for row in rows:
+        ttype, prio, filename, line, comment, done = row
+
+        ch = "[x]" if done else "[ ]"
+
+        print("- {d} {tt} {cm}: {fn}:{ln}".format(d=ch, tt=ttype, cm=comment, fn=filename, ln=line))
+        
 
 def print_plain(rows):
     for row in rows:

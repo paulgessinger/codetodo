@@ -12,6 +12,7 @@ setup(
     author = 'Paul Gessinger',
     author_email = 'hello@paulgessinger.com',
     url = 'https://github.com/paulgessinger/codetodo',
+    description = 'CLI tool that scans the working dir for text files, and looks for TODO and FIXME comments.',
     py_modules=['codetodo'],
     entry_points= {
         'console_scripts': [

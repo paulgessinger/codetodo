@@ -2,3 +2,4 @@ todo.py
 tabulate==0.7.5
 termcolor==1.1.0
 rglob==1.4
+pygments==1.1.1

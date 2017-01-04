@@ -7,7 +7,8 @@ setup(
     install_requires=[
         "tabulate",
         "termcolor",
-        "rglob"
+        "rglob",
+        "pygments"
     ],
     author = 'Paul Gessinger',
     author_email = 'hello@paulgessinger.com',

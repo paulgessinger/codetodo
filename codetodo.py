@@ -28,8 +28,8 @@ else:
 
 
 keywords = [
-    "@TODO",
-    "@FIXME",
+    "TODO",
+    "FIXME",
 ]
 
 blacklist = [
@@ -61,6 +61,7 @@ else:
 
 def mimefilter(r):
     mime = mimetypes.guess_type(r)
+    # print(r, mime)
     return mime[0] and "text" in mime[0]
 
 def find_in_file(filename, ncontext=0):
@@ -91,9 +92,9 @@ def get_grep(args, pool):
             for f in filenames:
                 files.append(os.path.join(dirpath, f))
 
-
     files = filter(lambda f: not any(fnmatch(f, b) for b in blacklist), files)
-    files = filter(mimefilter, files)
+    # files = filter(mimefilter, files)
+    # print(files)
 
 
     # print(len(files))
@@ -143,7 +144,7 @@ def main():
         help="Print in markdown task list format"
     )
 
-    style.add_argument(
+    parser.add_argument(
         "--context", "-c",
         action="store",
         nargs="?",
@@ -166,24 +167,24 @@ def main():
 
         filename = os.path.relpath(filename, os.getcwd())
 
-        comment_type = re.search('@(.*?):', comment_line)
-        if not comment_type:
+        # regex = '@(.*?):'
+        # regex = '(TODO|FIXME)(.*?)(:| )'
+        # regex = r"(TODO|FIXME)(?:(?:\((.*?)\))?|(?:\[(.*?)\])?){2}[ :](.*?)$"
+        regex = r"(TODO|FIXME)(?:(?:\((.*?)\))?|(?:\[(.*?)\])?){2}[ :{](.*?)[}]?$"
+        comm = re.search(regex, comment_line)
+        if not comm:
             continue
-        
-        comment_type = comment_type.group(1)
-        comment_type = comment_type.replace("(", "").replace(")", "")
-        prio = comment_type.count("!")
-        comment_type = comment_type.replace("!", "").strip()
 
-        rest, comment = comment_line.split(":", 1)
-        
-        done = "DONE" in comment
-        
-        comment = comment.replace("DONE", "")
-        comment = comment.strip()
+        keyword = comm.group(1)
+        if comm.group(2):
+            prio = comm.group(2).count("!")
+        else:
+            prio = 0
+        done = comm.group(3) == "x"
+        comment = comm.group(4).strip()
+ 
 
-        # print(filename, fileline, comment_type, comment)
-        rows.append((comment_type, prio, filename, fileline, comment, done, context))
+        rows.append((keyword, prio, filename, fileline, comment, done, context))
 
     type_prios = {
         "TODO": 10,
@@ -196,7 +197,7 @@ def main():
     try:
         if len(args.allow) > 0:
             rows = filter(lambda r: any([fnmatch(r[2], p) for p in args.allow]), rows)
-        rows = reversed(sorted(rows, key=lambda r: (0 if r[5] else 1, r[2], type_prios[r[0]], r[1] ) ))
+        rows = reversed(sorted(rows, key=lambda r: (0 if r[5] else 1, r[1], type_prios[r[0]], r[2], 1/float(r[3] ) )))
     except Exception as e:
         # print(e)
         raise
@@ -206,17 +207,24 @@ def main():
     if args.plain:
         print_plain(rows)
     elif args.md:
-        print_md(rows)
+        print_md(rows, show_context=args.context)
     else:
         print_fancy(rows, context=args.context > 0)
 
-def print_md(rows):
+def print_md(rows, show_context=False):
     for row in rows:
-        ttype, prio, filename, line, comment, done, _ = row
+        ttype, prio, filename, line, comment, done, context = row
 
         ch = "[x]" if done else "[ ]"
 
         print("- {d} {tt} {cm}: {fn}:{ln}".format(d=ch, tt=ttype, cm=comment, fn=filename, ln=line))
+        if show_context:
+            lexer = get_lexer_for_filename(filename)
+            lang = lexer.aliases[0]
+
+            print("```{}".format(lang))
+            print(context)
+            print("```")
         
 
 def print_plain(rows):
